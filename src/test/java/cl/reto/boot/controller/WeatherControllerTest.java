@@ -1,14 +1,18 @@
 package cl.reto.boot.controller;
 
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,9 +116,9 @@ public class WeatherControllerTest {
 	public void getTest2() {
 		try {
 			mockMvc.perform(MockMvcRequestBuilders
-							.get("test"))
-					.andExpect(status().isOk());
-					//.andExpect(MockMvcResultMatchers.content().string("OK"));
+							.get("http://localhost:8081/api/test"))
+					.andExpect(status().isOk())
+					.andExpect(MockMvcResultMatchers.content().string("OK"));
 		} catch (Exception e) {
 			System.out.println("Exception: " + e.getMessage());
 		}
@@ -122,17 +126,50 @@ public class WeatherControllerTest {
 	
 	@Test
 	public void testGetAllWeathers() {
-		when(weatherRepo.findAll()).thenReturn(lstWeather);
+		when(weatherService.findAll()).thenReturn(lstWeather);
 
 		try {
 			mockMvc.perform(MockMvcRequestBuilders
-					.get("api/weathers")
-					.contentType(MediaType.APPLICATION_JSON))
-						.andExpect(status().isOk());
+					.get("http://localhost:8081/api/weathers"))
+					.andDo(print())
+					.andExpect(status().isOk());
 		} catch (Exception e) {
 			System.out.println("Exception: " + e.getMessage());
 		}
 		
+	}
+
+	@Test
+	public void testGetWeatherById() {
+		when(weatherService.findWeatherById(1L)).thenReturn(Optional.ofNullable(lstWeather.get(0)));
+
+		try {
+			mockMvc.perform(MockMvcRequestBuilders
+					.get("http://localhost:8081/api/weathers/1"))
+					.andDo(print())
+					.andExpect(jsonPath("$.id", is(1)))
+					.andExpect(jsonPath("$location.city", is("Dallas")))
+					.andExpect(jsonPath("$location.state", is("Usa")))
+					.andExpect(status().isOk());
+		} catch (Exception e) {
+			System.out.println("Exception: " + e.getMessage());
+		}
+	}
+
+	@Test
+	public void testGetWeathersByDate() {
+		when(weatherService.findWeathersByDate(LocalDate.of(2020, 6, 18)))
+				.thenReturn((lstWeather.stream().filter(w -> w.getId() == 2).collect(Collectors.toList())));
+
+		try {
+			mockMvc.perform(MockMvcRequestBuilders
+							.get("http://localhost:8081/api/weathers?date=2020-06-18"))
+					.andDo(print())
+					.andExpect(jsonPath("$[date]", is("2020-06-18")))
+					.andExpect(status().isOk());
+		} catch (Exception e) {
+			System.out.println("Exception: " + e.getMessage());
+		}
 	}
 
 }

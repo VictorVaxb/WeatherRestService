@@ -50,7 +50,9 @@ public class WeatherController {
 		log.info("starting getAllWeathers()");
 
 		List<Weather> lstWeather = weatherServ.findAll();
-		
+
+		log.info("lstWeather size: " + lstWeather.size());
+
 		if(lstWeather != null && lstWeather.size() > 0) {			
 			return new ResponseEntity<>(lstWeather, HttpStatus.OK);
 		}
@@ -66,7 +68,9 @@ public class WeatherController {
 	@ResponseBody
 	public ResponseEntity<?> getWeatherById(@PathVariable(value = "weatherId") Long weatherId){
 		Optional<Weather> weather = weatherServ.findWeatherById(weatherId);
-		
+
+		log.info("weather: " + weather.toString());
+
 		if(weather != null && !Optional.empty().equals(weather)) {
 			return new ResponseEntity<>(weather, HttpStatus.OK);
 		}
@@ -85,7 +89,9 @@ public class WeatherController {
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
 		){
 		List<Weather> weathers = weatherServ.findWeathersByDate(date);
-		
+
+		log.info("weathers: " + weathers.toString());
+
 		if(weathers != null) {
 			return new ResponseEntity<>(weathers, HttpStatus.OK);
 		}
