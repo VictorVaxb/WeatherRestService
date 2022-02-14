@@ -1,5 +1,6 @@
 package cl.reto.boot.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.text.NumberFormat;
@@ -38,6 +39,7 @@ public class Weather {
 	@JoinColumn(referencedColumnName = "id")
 	private Location location;
 
+	@JsonIgnore
 	public String getLowTemp() {
 		if(temperature.size() > 0) {
 			return temperature.stream().min(Comparator.naturalOrder()).get().toString();
@@ -45,11 +47,17 @@ public class Weather {
 		return null;
 	}
 
+	@JsonIgnore
 	public String getHighTemp() {
 		if(temperature.size() > 0) {
 			return temperature.stream().max(Comparator.naturalOrder()).get().toString();
 		}
 		return null;
 	}
-	
+
+	@JsonIgnore
+	public String getCityFromLocation(){
+		return this.location.getCity();
+	}
+
 }

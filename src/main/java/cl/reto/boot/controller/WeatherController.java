@@ -113,12 +113,13 @@ public class WeatherController {
 				defaultValue = "#{T(java.time.LocalDate).now()}")
 				@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
 		){
+
 		List<Report> reports = weatherServ.findWeathersByRangeDate(startDate, endDate);
-		
+
 		if(reports != null) {
 			return new ResponseEntity<>(reports, HttpStatus.OK);
 		}
-		
+
 		return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
 	}
 	

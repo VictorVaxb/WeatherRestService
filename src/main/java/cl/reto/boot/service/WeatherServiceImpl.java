@@ -31,6 +31,11 @@ public class WeatherServiceImpl implements IWeatherService {
 	public List<Weather> findAll() {
 		List<Weather> lstWeather = (List<Weather>) weatherRepo.findAll();
 
+		lstWeather.stream()
+				//.sorted(Comparator.comparing(Weather::getId).reversed()) //No ordena bien
+				.map(WeatherBuilder::build)
+				.collect(Collectors.toList());
+
 		lstWeather.sort((w1, w2) -> Long.compare(w2.getId(), w1.getId()));
 
 		return lstWeather;
@@ -70,31 +75,17 @@ public class WeatherServiceImpl implements IWeatherService {
 	 * */
 	@Override
 	public List<Report> findWeathersByRangeDate(LocalDate startdate, LocalDate enddate) {
-		
-		List<Report> lstReports = new ArrayList<Report>();
-		
+
 		log.info("startdate: " + startdate);
 		log.info("enddate: " + enddate);
-		
-		List<Weather> lstWeathers = weatherRepo.getWeatherBetweenDates(startdate, enddate);
 
-		//TODO sacar a clase aparte
-		lstWeathers.stream()
-				.filter(Objects::nonNull)
-				.forEach(w -> lstReports.add(
-						new Report(
-								w.getLocation().getCity(),
-								w.getLowTemp(),
-								w.getHighTemp(),
-								w.getLowTemp() == null && w.getHighTemp() == null ? NO_TEMP_MSG : ""
-						)
-				));
+		List<Report> reportsList = weatherRepo.getWeatherBetweenDates(startdate, enddate)
+				.stream()
+				.sorted(Comparator.comparing(Weather::getCityFromLocation))
+				.map(WeatherBuilder::report)
+				.collect(Collectors.toList());
 
-		lstReports.sort((r1, r2) -> r1.getCityName().compareTo(r2.getCityName()));
-
-		log.info(lstReports.toString());
-
-		return lstReports;
+		return reportsList;
 
 	}
 
